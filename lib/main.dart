@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'blocs/news_bloc/news_bloc.dart';
-import 'models/news_model.dart';
 import 'services/news_api_service.dart';
-import 'screens/news_list_screen.dart';
-import 'screens/news_detail_screen.dart';
+import 'routes/app_router.dart';
 import 'theme/app_theme.dart';
+import 'constants/route_names.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const NewsApp());
 }
 
@@ -18,35 +20,16 @@ class NewsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => NewsBloc(NewsService())..add(FetchNewsEvent()),
-        )
+        BlocProvider<NewsBloc>(
+          create: (_) => NewsBloc(NewsService())..add(FetchNewsEvent()),
+        ),
       ],
       child: MaterialApp(
-        title: 'News Pulse',
+        title: 'News',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
-        home: const NewsListScreen(),
-        onGenerateRoute: (settings) {
-          switch (settings.name) {
-            case '/':
-              return MaterialPageRoute(builder: (_) => const NewsListScreen());
-            case '/details':
-              final article = settings.arguments as NewsArticle;
-              return MaterialPageRoute(
-                builder: (_) => NewsDetailScreen(article: article),
-                settings: settings,
-              );
-            default:
-              return MaterialPageRoute(
-                builder: (_) => Scaffold(
-                  body: Center(
-                    child: Text('No route defined for ${settings.name}'),
-                  ),
-                ),
-              );
-          }
-        },
+        initialRoute: RouteNames.home,
+        onGenerateRoute: AppRouter.generateRoute,
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:news/theme/app_colors.dart';
-import '../../models/news_model.dart';
-import '../../utils/date_formatter.dart';
+import '../../../models/news_model.dart';
+import '../../../utils/date_formatter.dart';
 
 class NewsCard extends StatelessWidget {
   final NewsArticle article;
@@ -11,15 +11,14 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     var size = MediaQuery.of(context).size;
 
-    print(article.urlToImage);
     return Card(
       elevation: 1,
       color: AppColors.primary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
+      shadowColor: Colors.lightBlue.withValues(alpha: 0.3),
 
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -29,7 +28,6 @@ class NewsCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Column (left side)
               Flexible(
                 flex: 2,
                 child: Row(
@@ -41,23 +39,32 @@ class NewsCard extends StatelessWidget {
                         height: size.width * 0.23,
                         child: Hero(
                           tag: 'news-image-${article.title}',
-                          child: Image.network(
-                            article.urlToImage,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                color: Colors.grey[200],
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.broken_image),
-                              );
-                            },
-                          ),
+                          child:
+                              article.urlToImage.isNotEmpty
+                                  ? Image.network(
+                                    article.urlToImage,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (
+                                      context,
+                                      child,
+                                      loadingProgress,
+                                    ) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(Icons.broken_image),
+                                      );
+                                    },
+                                  )
+                                  : SizedBox(),
                         ),
                       ),
                     ),
@@ -65,10 +72,8 @@ class NewsCard extends StatelessWidget {
                 ),
               ),
 
-              // Spacer between image and text
               const SizedBox(width: 12),
 
-              // Text Column (right side)
               Flexible(
                 flex: 4,
                 child: Column(
@@ -94,7 +99,7 @@ class NewsCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     Text(
                       DateFormatter.formatDate(article.publishedAt),
                       style: TextStyle(fontSize: 15, color: Colors.grey[600]),
